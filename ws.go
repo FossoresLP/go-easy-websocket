@@ -14,19 +14,29 @@ import (
 type HandleFunc func(string) (string, error)
 
 var upgrader = ws.Upgrader{}
-var handlers = make(map[string]HandleFunc)
 
-// HTTPHandler upgrades http requests to wss and starts a goroutine for handling ws messages
-func HTTPHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+// Handler for a single websocket endpoint
+type Handler struct {
+	handlers map[string]HandleFunc
+}
+
+// NewHandler creates a new Handler
+func NewHandler() (handler Handler) {
+	handler.handlers = make(map[string]HandleFunc)
+	return
+}
+
+// UpgradeHandler upgrades http requests to wss and starts a goroutine for handling ws messages
+func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
 	}
-	go WSSHandler(conn)
+	go h.handlerRoutine(conn)
 }
 
-//WSSHandler handles messages from clients
-func WSSHandler(conn *ws.Conn) {
+// handlerRoutine handles processing the recived messages and forwarding them to the defined handler functions
+func (h *Handler) handlerRoutine(conn *ws.Conn) {
 	defer conn.Close()
 	for {
 		msgType, msg, err := conn.ReadMessage()
@@ -46,7 +56,7 @@ func WSSHandler(conn *ws.Conn) {
 				break
 			}
 		}
-		resp, err := handlers[cmd](data)
+		resp, err := h.handlers[cmd](data)
 		if err != nil {
 			err = conn.WriteMessage(ws.TextMessage, []byte("websocket: "+err.Error()))
 			if err != nil {
@@ -63,8 +73,8 @@ func WSSHandler(conn *ws.Conn) {
 }
 
 // Handle registers a handle function for a command
-func Handle(cmd string, action HandleFunc) {
-	handlers[cmd] = action
+func (h *Handler) Handle(cmd string, action HandleFunc) {
+	h.handlers[cmd] = action
 }
 
 func parseMsg(msg string) (cmd string, data string, err error) {
