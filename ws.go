@@ -21,9 +21,10 @@ type Handler struct {
 }
 
 // NewHandler creates a new Handler
-func NewHandler() (handler Handler) {
-	handler.handlers = make(map[string]HandleFunc)
-	return
+func NewHandler() *Handler {
+	h := new(Handler)
+	h.handlers = make(map[string]HandleFunc)
+	return h
 }
 
 // UpgradeHandler upgrades http requests to wss and starts a goroutine for handling ws messages
