@@ -13,8 +13,8 @@ import (
 	ews "github.com/FossoresLP/go-easy-websocket"
 )
 
-func testWsHandler(data string) (resp string, err error) {
-	resp = "yourData: " + data
+func testWsHandler(data []byte) (resp []byte, err error) {
+	resp = []byte("yourData: ") + data
 	return
 }
 
