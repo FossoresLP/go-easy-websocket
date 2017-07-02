@@ -37,17 +37,19 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request, params 
 // handlerRoutine handles processing the recived messages and forwarding them to the defined handler functions
 func (h *Handler) handlerRoutine(conn *ws.Conn) {
 	defer conn.Close()
-	resp, err := h.handlers["open"](nil)
-	if err != nil {
-		err = conn.WriteMessage(ws.TextMessage, []byte(err.Error()))
+	if fnc, ok := h.handlers["open"]; ok {
+		resp, err := fnc(nil)
 		if err != nil {
-			return
+			err = conn.WriteMessage(ws.TextMessage, []byte(err.Error()))
+			if err != nil {
+				return
+			}
 		}
-	}
-	if resp != nil {
-		err = conn.WriteMessage(ws.TextMessage, resp)
-		if err != nil {
-			return
+		if resp != nil {
+			err = conn.WriteMessage(ws.TextMessage, resp)
+			if err != nil {
+				return
+			}
 		}
 	}
 	for {
@@ -68,15 +70,22 @@ func (h *Handler) handlerRoutine(conn *ws.Conn) {
 				break
 			}
 		}
-		resp, err := h.handlers[cmd](data)
-		if err != nil {
-			err = conn.WriteMessage(ws.TextMessage, []byte("websocket: "+err.Error()))
+		if fnc, ok := h.handlers[cmd]; ok {
+			resp, err := fnc(data)
 			if err != nil {
-				break
+				err = conn.WriteMessage(ws.TextMessage, []byte("websocket: "+err.Error()))
+				if err != nil {
+					break
+				}
 			}
-		}
-		if resp != nil {
-			err = conn.WriteMessage(ws.TextMessage, resp)
+			if resp != nil {
+				err = conn.WriteMessage(ws.TextMessage, resp)
+				if err != nil {
+					break
+				}
+			}
+		} else {
+			err = conn.WriteMessage(ws.TextMessage, []byte("websocket: command not supported by server"))
 			if err != nil {
 				break
 			}
@@ -105,7 +114,7 @@ func parseMsgByte(msg []byte) (cmd string, data []byte, err error) {
 	var i uint8
 	for ; i <= 255; i++ {
 		if msg[i] == ':' && msg[i+1] == ' ' {
-			cmd = string(msg[0 : i-1])
+			cmd = string(msg[0:i])
 			data = msg[i+2:]
 			break
 		}
