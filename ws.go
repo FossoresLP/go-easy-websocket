@@ -4,14 +4,12 @@ import (
 	"errors"
 	"net/http"
 
-	"strings"
-
 	ws "github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 )
 
 // HandleFunc is a type used to store handle functions for ws commands
-type HandleFunc func(string) (string, error)
+type HandleFunc func([]byte) ([]byte, error)
 
 var upgrader = ws.Upgrader{}
 
@@ -50,7 +48,7 @@ func (h *Handler) handlerRoutine(conn *ws.Conn) {
 				break
 			}
 		}
-		cmd, data, err := parseMsg(string(msg))
+		cmd, data, err := parseMsgByte(msg)
 		if err != nil {
 			err = conn.WriteMessage(ws.TextMessage, []byte(err.Error()))
 			if err != nil {
@@ -64,8 +62,8 @@ func (h *Handler) handlerRoutine(conn *ws.Conn) {
 				break
 			}
 		}
-		if resp != "" {
-			err = conn.WriteMessage(ws.TextMessage, []byte(resp))
+		if resp != nil {
+			err = conn.WriteMessage(ws.TextMessage, resp)
 			if err != nil {
 				break
 			}
@@ -78,7 +76,7 @@ func (h *Handler) Handle(cmd string, action HandleFunc) {
 	h.handlers[cmd] = action
 }
 
-func parseMsg(msg string) (cmd string, data string, err error) {
+/*func parseMsg(msg string) (cmd string, data string, err error) {
 	split := strings.SplitN(msg, ": ", 2)
 	if split[0] == "" {
 		err = errors.New("websocket: no command defined")
@@ -86,5 +84,21 @@ func parseMsg(msg string) (cmd string, data string, err error) {
 	}
 	cmd = split[0]
 	data = split[1]
+	return
+}*/
+
+// Parse a recived message and return string and data
+func parseMsgByte(msg []byte) (cmd string, data []byte, err error) {
+	var i uint8
+	for ; i <= 255; i++ {
+		if msg[i] == ':' && msg[i+1] == ' ' {
+			cmd = string(msg[0 : i-1])
+			data = msg[i+2:]
+			break
+		}
+	}
+	if cmd == "" {
+		err = errors.New("websocket: no command found")
+	}
 	return
 }
