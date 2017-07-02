@@ -37,6 +37,19 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request, params 
 // handlerRoutine handles processing the recived messages and forwarding them to the defined handler functions
 func (h *Handler) handlerRoutine(conn *ws.Conn) {
 	defer conn.Close()
+	resp, err := h.handlers["open"](nil)
+	if err != nil {
+		err = conn.WriteMessage(ws.TextMessage, []byte(err.Error()))
+		if err != nil {
+			return
+		}
+	}
+	if resp != nil {
+		err = conn.WriteMessage(ws.TextMessage, resp)
+		if err != nil {
+			return
+		}
+	}
 	for {
 		msgType, msg, err := conn.ReadMessage()
 		if err != nil {
