@@ -98,17 +98,6 @@ func (h *Handler) Handle(cmd string, action HandleFunc) {
 	h.handlers[cmd] = action
 }
 
-/*func parseMsg(msg string) (cmd string, data string, err error) {
-	split := strings.SplitN(msg, ": ", 2)
-	if split[0] == "" {
-		err = errors.New("websocket: no command defined")
-		return
-	}
-	cmd = split[0]
-	data = split[1]
-	return
-}*/
-
 // Parse a recived message and return string and data
 func parseMsgByte(msg []byte) (cmd string, data []byte, err error) {
 	var i uint8
