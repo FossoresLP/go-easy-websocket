@@ -12,7 +12,7 @@ func (h *Handler) handlerRoutine(conn *ws.Conn, userid uuid.UUID) {
 	defer conn.Close()
 	defer h.unregisterListener(userid)
 	if fnc, ok := h.handlers["open"]; ok {
-		resp, err := fnc(nil)
+		resp, err := fnc(userid.Bytes())
 		if err != nil {
 			err = h.WriteToClient(userid, []byte(err.Error()))
 			if err != nil {

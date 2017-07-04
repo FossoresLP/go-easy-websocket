@@ -1,8 +1,17 @@
 GoEasyWebsocket
 ===============
-This package allows you to easily create web application servers with websocket support. Communication is processed using a text based structure consisting of a command and optionally data. The command/data has to be processed using handle functions for commands which may return a string submitted as a answer to the client. The data has to be processed in the handle functions.
+This package allows you to easily create web application servers with websocket support. 
+Communication is processed using a text based structure consisting of a command and optionally data. 
 
-A handler for `"open"` can be registered and will be called every time a connection is opened. Data will always be `nil`
+Client requests:
+----------------
+For client requests handler functions can be registered for specific commands. They will recieve the raw data and may return a response.
+
+A handler for `"open"` can be registered and will be called every time a connection is opened. Data will always be the clients UUID.
+
+Server push:
+------------
+The server can push commands and data to the clients using channels for which the clients have to register as listeners. The server may also push commands and data to specific clients whenever necessary using their UUID.
 
 Sample application using httprouter:
 ------------------------------------
