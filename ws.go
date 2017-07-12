@@ -7,13 +7,12 @@ import (
 	jwt "github.com/fossoreslp/go-jwt-ed25519"
 	uuid "github.com/fossoreslp/go.uuid"
 	ws "github.com/gorilla/websocket"
-	"github.com/julienschmidt/httprouter"
 )
 
 var upgrader = ws.Upgrader{}
 
 // UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
-func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request, params ...httprouter.Params) {
+func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	user, token, ok := r.BasicAuth()
 	fmt.Println(ok)
 	userid, err := uuid.FromString(user)
