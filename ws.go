@@ -16,6 +16,7 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request, params 
 		w.WriteHeader(500)
 		return
 	}
+	sessionid := uuid.NewV4()
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		w.WriteHeader(426)
@@ -23,6 +24,6 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request, params 
 		return
 	}
 	h.writeChannels[userid] = make(chan []byte, 8)
-	go h.handlerRoutine(conn, userid)
-	go h.writerRoutine(conn, userid)
+	go h.handlerRoutine(conn, sessionid)
+	go h.writerRoutine(conn, sessionid)
 }
