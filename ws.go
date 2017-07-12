@@ -13,24 +13,7 @@ var upgrader = ws.Upgrader{}
 
 // UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
 func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
-	user, token, ok := r.BasicAuth()
-	authHeader := r.Header.Get("Authentication")
-	fmt.Println(authHeader)
-	fmt.Println(r.Header)
-	/*authData, err := base64.URLEncoding.DecodeString(authHeader)
-	if err != nil {
-		w.WriteHeader(403)
-		fmt.Println("Can't parse Authentication header")
-		return
-	}*/
-	fmt.Println(ok)
-	userid, err := uuid.FromString(user)
-	if err != nil {
-		w.WriteHeader(403)
-		fmt.Println("UUID conversion")
-		return
-	}
-	auth, err := jwt.Decode(token)
+	auth, err := jwt.Decode(r.Header.Get("Sec-Websocket-Protocol"))
 	if err != nil {
 		w.WriteHeader(403)
 		fmt.Println("JWT decoding")
@@ -47,11 +30,7 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("JWT sub invalid")
 		return
 	}
-	if subject != userid {
-		w.WriteHeader(403)
-		fmt.Println("UUID != JWT sub")
-		return
-	}
+	fmt.Println(subject.String())
 
 	sessionid := uuid.NewV4()
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -60,7 +39,7 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Upgrade", "WebSocket")
 		return
 	}
-	h.writeChannels[userid] = make(chan []byte, 8)
+	h.writeChannels[sessionid] = make(chan []byte, 8)
 	go h.handlerRoutine(conn, sessionid)
 	go h.writerRoutine(conn, sessionid)
 }
