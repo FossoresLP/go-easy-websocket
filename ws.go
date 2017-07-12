@@ -13,7 +13,7 @@ var upgrader = ws.Upgrader{}
 // UpgradeHandler upgrades http requests to wss and starts a goroutine for handling ws messages
 // UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
 func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	userid, err := uuid.FromString(params.ByName("uuid"))
+func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request, params ...httprouter.Params) {
 	if err != nil {
 		w.WriteHeader(500)
 		return
