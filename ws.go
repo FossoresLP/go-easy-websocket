@@ -18,24 +18,29 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	userid, err := uuid.FromString(user)
 	if err != nil {
 		w.WriteHeader(403)
+		fmt.Println("UUID conversion")
 		return
 	}
 	auth, err := jwt.Decode(token)
 	if err != nil {
 		w.WriteHeader(403)
+		fmt.Println("JWT decoding")
 		return
 	}
 	if !auth.Valid {
 		w.WriteHeader(403)
+		fmt.Println("JWT invalid")
 		return
 	}
 	subject, err := uuid.FromString(auth.Content.Sub)
 	if err != nil {
 		w.WriteHeader(403)
+		fmt.Println("JWT sub invalid")
 		return
 	}
 	if subject != userid {
 		w.WriteHeader(403)
+		fmt.Println("UUID != JWT sub")
 		return
 	}
 
