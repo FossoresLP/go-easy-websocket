@@ -13,7 +13,7 @@ var upgrader = ws.Upgrader{}
 
 // UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
 func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
-	auth, err := jwt.Decode(r.Header.Get("Sec-Websocket-Protocol"))
+	auth, err := jwt.FromString(r.Header.Get("Sec-Websocket-Protocol"))
 	if err != nil {
 		w.WriteHeader(403)
 		fmt.Println("JWT decoding")
