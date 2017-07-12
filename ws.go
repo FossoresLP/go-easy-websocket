@@ -16,6 +16,7 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	user, token, ok := r.BasicAuth()
 	authHeader := r.Header.Get("Authentication")
 	fmt.Println(authHeader)
+	fmt.Println(r.Header)
 	/*authData, err := base64.URLEncoding.DecodeString(authHeader)
 	if err != nil {
 		w.WriteHeader(403)
