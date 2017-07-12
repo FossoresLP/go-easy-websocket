@@ -14,6 +14,14 @@ var upgrader = ws.Upgrader{}
 // UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
 func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	user, token, ok := r.BasicAuth()
+	authHeader := r.Header.Get("Authentication")
+	fmt.Println(authHeader)
+	/*authData, err := base64.URLEncoding.DecodeString(authHeader)
+	if err != nil {
+		w.WriteHeader(403)
+		fmt.Println("Can't parse Authentication header")
+		return
+	}*/
 	fmt.Println(ok)
 	userid, err := uuid.FromString(user)
 	if err != nil {
