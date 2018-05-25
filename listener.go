@@ -3,7 +3,7 @@ package websocket
 import (
 	"errors"
 
-	uuid "github.com/fossoreslp/go.uuid"
+	"github.com/fossoreslp/go-uuid-v4"
 )
 
 // RegisterListenChannel registers a channel for writing to clients listening on it

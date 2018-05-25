@@ -3,10 +3,9 @@ package websocket
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
-	jwt "github.com/fossoreslp/go-jwt-ed25519"
-	uuid "github.com/fossoreslp/go.uuid"
+	"github.com/fossoreslp/go-jwt-ed25519"
+	"github.com/fossoreslp/go-uuid-v4"
 	ws "github.com/gorilla/websocket"
 )
 
@@ -14,8 +13,18 @@ var upgrader = ws.Upgrader{}
 
 // UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
 func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
-	headers := strings.Split(r.Header.Get("Sec-Websocket-Protocol"), ",")
-	auth, err := jwt.FromString(headers[0])
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		w.WriteHeader(403)
+		fmt.Println("Auth cookie not set")
+		return
+	}
+	if !cookie.HttpOnly || !cookie.Secure {
+		w.WriteHeader(403)
+		fmt.Println("Auth cookie not secure")
+		return
+	}
+	auth, err := jwt.FromString(cookie.Value)
 	if err != nil {
 		w.WriteHeader(403)
 		fmt.Println("JWT decoding")
@@ -26,15 +35,8 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("JWT invalid")
 		return
 	}
-	subject, err := uuid.FromString(auth.Content.Sub)
-	if err != nil {
-		w.WriteHeader(403)
-		fmt.Println("JWT sub invalid")
-		return
-	}
-	fmt.Println(subject.String())
 
-	sessionid := uuid.NewV4()
+	sessionid, err := uuid.New()
 	upgrader.Subprotocols = []string{"cmd.fossores.de"}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

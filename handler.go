@@ -3,7 +3,7 @@ package websocket
 import (
 	"errors"
 
-	uuid "github.com/fossoreslp/go.uuid"
+	"github.com/fossoreslp/go-uuid-v4"
 	ws "github.com/gorilla/websocket"
 )
 
@@ -12,7 +12,7 @@ func (h *Handler) handlerRoutine(conn *ws.Conn, userid uuid.UUID) {
 	defer conn.Close()
 	defer h.unregisterListener(userid)
 	if fnc, ok := h.handlers["open"]; ok {
-		resp, err := fnc(userid.Bytes())
+		resp, err := fnc(userid[:])
 		if err != nil {
 			err = h.WriteToClient(userid, []byte(err.Error()))
 			if err != nil {

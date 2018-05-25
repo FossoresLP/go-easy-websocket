@@ -1,6 +1,6 @@
 package websocket
 
-import uuid "github.com/fossoreslp/go.uuid"
+import "github.com/fossoreslp/go-uuid-v4"
 
 // HandleFunc is a type used to store handle functions for ws commands
 type HandleFunc func([]byte) ([]byte, error)
