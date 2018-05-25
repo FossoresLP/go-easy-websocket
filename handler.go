@@ -12,7 +12,7 @@ func (h *Handler) handlerRoutine(conn *ws.Conn, userid uuid.UUID) {
 	defer conn.Close()
 	defer h.unregisterListener(userid)
 	if fnc, ok := h.handlers["open"]; ok {
-		resp, err := fnc(userid[:])
+		resp, err := fnc(nil, userid)
 		if err != nil {
 			err = h.WriteToClient(userid, []byte(err.Error()))
 			if err != nil {
@@ -53,7 +53,7 @@ func (h *Handler) handlerRoutine(conn *ws.Conn, userid uuid.UUID) {
 				}
 			}
 		} else if fnc, ok := h.handlers[cmd]; ok {
-			resp, err := fnc(data)
+			resp, err := fnc(data, userid)
 			if err != nil {
 				err = h.WriteToClient(userid, []byte("websocket: "+err.Error()))
 				if err != nil {
