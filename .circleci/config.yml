@@ -7,12 +7,16 @@ jobs:
     steps:
       - checkout
       - run: go get
+      - run: go get -u github.com/jstemmer/go-junit-report
+      - run: mkdir test-results
       - run:
           name: Run unit tests
-          command: go test
+          command: go test -v 2>&1 | go-junit-report > test-results/report.xml
       - run:
           name: Coverage
-          command: go test -cover
+          command: go test -cover 2>&1 | go-junit-report > test-results/coverage.xml
       - run:
           name: go vet
           command: go vet
+      - store_test_results:
+          path: test-results
