@@ -9,14 +9,12 @@ import (
 
 func (h *Handler) writerRoutine(conn *ws.Conn, userid uuid.UUID) {
 	defer conn.Close()
-	channel, ok := h.writeChannels[userid]
-	if !ok {
-		return
-	}
-	for {
-		err := conn.WriteMessage(ws.TextMessage, <-channel)
-		if err != nil {
-			break
+	if channel, ok := h.writeChannels[userid]; ok {
+		for {
+			err := conn.WriteMessage(ws.TextMessage, <-channel)
+			if err != nil {
+				break
+			}
 		}
 	}
 }

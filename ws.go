@@ -4,35 +4,31 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fossoreslp/go-jwt-ed25519"
 	"github.com/fossoreslp/go-uuid-v4"
 	ws "github.com/gorilla/websocket"
 )
 
 var upgrader = ws.Upgrader{}
 
+// ValidateFunction is a function that validates the auth token and returns an error if it is invalid
+var ValidateFunction func(string) error
+
 // UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
 func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("auth")
 	if err != nil {
 		w.WriteHeader(403)
-		fmt.Println("Auth cookie not set")
+		fmt.Println("Authentication failed")
 		return
 	}
 	if !cookie.HttpOnly || !cookie.Secure {
 		w.WriteHeader(403)
-		fmt.Println("Auth cookie not secure")
+		fmt.Println("Authentication failed")
 		return
 	}
-	auth, err := jwt.FromString(cookie.Value)
-	if err != nil {
+	if ValidateFunction(cookie.Value) != nil {
 		w.WriteHeader(403)
-		fmt.Println("JWT decoding")
-		return
-	}
-	if !auth.Valid {
-		w.WriteHeader(403)
-		fmt.Println("JWT invalid")
+		fmt.Println("Authentication failed")
 		return
 	}
 
