@@ -3,7 +3,8 @@ package websocket
 import "github.com/fossoreslp/go-uuid-v4"
 
 // HandleFunc is a type used to store handle functions for ws commands
-type HandleFunc func([]byte, uuid.UUID) ([]byte, error)
+// Handle functions take the message as a byte slice and the auth token as a string and may return a response as a byte slice as well as an error
+type HandleFunc func([]byte, string) ([]byte, error)
 
 // channel channel and listening clients
 type channel struct {

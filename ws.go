@@ -41,6 +41,6 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.writeChannels[sessionid] = make(chan []byte, 8)
-	go h.handlerRoutine(conn, sessionid)
+	go h.handlerRoutine(conn, sessionid, cookie.Value)
 	go h.writerRoutine(conn, sessionid)
 }

@@ -9,19 +9,19 @@ import (
 )
 
 // handlerRoutine handles processing the recived messages and forwarding them to the defined handler functions
-func (h *Handler) handlerRoutine(conn *ws.Conn, userid uuid.UUID) {
+func (h *Handler) handlerRoutine(conn *ws.Conn, sessionid uuid.UUID, token string) {
 	defer conn.Close()
-	defer h.unregisterListener(userid)
+	defer h.unregisterListener(sessionid)
 	if fnc, ok := h.handlers["open"]; ok {
-		resp, err := fnc(nil, userid)
+		resp, err := fnc([]byte(sessionid.String()), token)
 		if err != nil {
-			err = h.WriteToClient(userid, []byte(err.Error()))
+			err = h.WriteToClient(sessionid, []byte(err.Error()))
 			if err != nil {
 				return
 			}
 		}
 		if resp != nil {
-			err = h.WriteToClient(userid, resp)
+			err = h.WriteToClient(sessionid, resp)
 			if err != nil {
 				return
 			}
@@ -33,42 +33,42 @@ func (h *Handler) handlerRoutine(conn *ws.Conn, userid uuid.UUID) {
 			break
 		}
 		if msgType == ws.BinaryMessage {
-			err = h.WriteToClient(userid, []byte("websocket: binary data not supported"))
+			err = h.WriteToClient(sessionid, []byte("websocket: binary data not supported"))
 			if err != nil {
 				break
 			}
 		}
 		cmd, data, err := parseMsgByte(msg)
 		if err != nil {
-			err = h.WriteToClient(userid, []byte(err.Error()))
+			err = h.WriteToClient(sessionid, []byte(err.Error()))
 			if err != nil {
 				break
 			}
 		}
 		if cmd == "listen" {
-			err = h.registerAsListener(userid, string(data))
+			err = h.registerAsListener(sessionid, string(data))
 			if err != nil {
-				err = h.WriteToClient(userid, []byte(err.Error()))
+				err = h.WriteToClient(sessionid, []byte(err.Error()))
 				if err != nil {
 					break
 				}
 			}
 		} else if fnc, ok := h.handlers[cmd]; ok {
-			resp, err := fnc(data, userid)
+			resp, err := fnc(data, token)
 			if err != nil {
-				err = h.WriteToClient(userid, []byte("websocket: "+err.Error()))
+				err = h.WriteToClient(sessionid, []byte("websocket: "+err.Error()))
 				if err != nil {
 					break
 				}
 			}
 			if resp != nil {
-				err = h.WriteToClient(userid, resp)
+				err = h.WriteToClient(sessionid, resp)
 				if err != nil {
 					break
 				}
 			}
 		} else {
-			err = h.WriteToClient(userid, []byte("websocket: command not supported by server"))
+			err = h.WriteToClient(sessionid, []byte("websocket: command not supported by server"))
 			if err != nil {
 				break
 			}
