@@ -20,9 +20,9 @@ func (h *Handler) writerRoutine(conn *ws.Conn, userid uuid.UUID) {
 }
 
 func (h *Handler) channelRoutine(channel string) {
-	if c, ok := h.listeners[channel]; ok {
+	if c, ok := h.channels[channel]; ok {
 		for {
-			msg := <-c.channel
+			msg := <-c.send
 			for _, listener := range c.listeners {
 				err := h.WriteToClient(listener, msg)
 				if err != nil {
@@ -35,8 +35,8 @@ func (h *Handler) channelRoutine(channel string) {
 
 // WriteToChannel allows to write to all clients listening to a specific channel
 func (h *Handler) WriteToChannel(channel string, data []byte) error {
-	if c, ok := h.listeners[channel]; ok {
-		c.channel <- data
+	if c, ok := h.channels[channel]; ok {
+		c.send <- data
 		return nil
 	}
 	return errors.New("websocket: no such channel")

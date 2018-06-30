@@ -5,9 +5,9 @@ import "github.com/fossoreslp/go-uuid-v4"
 // HandleFunc is a type used to store handle functions for ws commands
 type HandleFunc func([]byte, uuid.UUID) ([]byte, error)
 
-// Listener channel and listening clients
-type Listener struct {
-	channel   chan []byte
+// channel channel and listening clients
+type channel struct {
+	send      chan []byte
 	listeners []uuid.UUID
 }
 
@@ -15,14 +15,14 @@ type Listener struct {
 type Handler struct {
 	handlers      map[string]HandleFunc
 	writeChannels map[uuid.UUID]chan []byte
-	listeners     map[string]*Listener
+	channels      map[string]*channel
 }
 
 // NewHandler creates a new Handler
 func NewHandler() *Handler {
-	h := new(Handler)
-	h.handlers = make(map[string]HandleFunc)
-	h.writeChannels = make(map[uuid.UUID]chan []byte)
-	h.listeners = make(map[string]*Listener)
-	return h
+	return &Handler{
+		make(map[string]HandleFunc),
+		make(map[uuid.UUID]chan []byte),
+		make(map[string]*channel),
+	}
 }
