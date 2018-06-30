@@ -7,12 +7,16 @@ import (
 )
 
 // RegisterListenChannel registers a channel for writing to clients listening on it
-func (h *Handler) RegisterListenChannel(name string) {
-	var listener = new(Listener)
-	listener.channel = make(chan []byte, 8)
-	listener.listeners = make([]uuid.UUID, 1)
-	h.listeners[name] = listener
+func (h *Handler) RegisterListenChannel(name string) error {
+	if _, ok := h.listeners[name]; ok {
+		return errors.New("channel already exists")
+	}
+	h.listeners[name] = &Listener{
+		make(chan []byte, 8),
+		make([]uuid.UUID, 1),
+	}
 	go h.channelRoutine(name)
+	return nil
 }
 
 func (h *Handler) registerAsListener(id uuid.UUID, name string) error {
