@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/fossoreslp/go-uuid-v4"
 	ws "github.com/gorilla/websocket"
@@ -76,8 +77,21 @@ func (h *Handler) handlerRoutine(conn *ws.Conn, userid uuid.UUID) {
 }
 
 // Handle registers a handle function for a command
-func (h *Handler) Handle(cmd string, action HandleFunc) {
+func (h *Handler) Handle(cmd string, action HandleFunc) error {
+	if len(cmd) < 255 {
+		return errors.New("command may not be longer than 255 characters")
+	}
+	if strings.ContainsRune(cmd, ':') {
+		return errors.New("command may not contain a colon")
+	}
+	if cmd == "websocket" {
+		return errors.New("command websocket is reserved")
+	}
+	if _, ok := h.handlers[cmd]; ok {
+		return errors.New("command already exists")
+	}
 	h.handlers[cmd] = action
+	return nil
 }
 
 // Parse a recived message and return string and data
