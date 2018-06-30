@@ -1,40 +1,53 @@
 GoEasyWebsocket
 ===============
-This package allows you to easily create web application servers with websocket support. 
-Communication is processed using a text based structure consisting of a command and optionally data. 
 
-Client requests:
-----------------
-For client requests, handler functions can be registered for specific commands. They will recieve the raw data and may return a response.
+[![CircleCI branch](https://img.shields.io/circleci/project/github/FossoresLP/go-easy-websocket/master.svg?style=flat-square)](https://circleci.com/gh/FossoresLP/go-easy-websocket)
+[![GoDoc](https://img.shields.io/badge/style-reference-blue.svg?longCache=true&style=flat-square&label=GoDoc)](https://godoc.org/github.com/FossoresLP/go-easy-websocket)
 
-A handler for `"open"` can be registered and will be called every time a connection is opened. The data submitted will always be the clients UUID.
+This package allows you to easily create web application servers with websocket support.
+Communication is processed using a text based structure consisting of a command and optionally data.
 
-Server push:
-------------
-The server can push commands and data to the clients using channels for which the clients have to register as listeners. The server may also push commands and data to specific clients whenever necessary using their UUID.
+Setup
+-----
 
-Please refer to GoDocs instead of the following example to better understand the package.
------------------------------------------------------------------------------------------
-> Sample application using httprouter:
-> ------------------------------------
-> ```go
-> package main
-> 
-> import (
-> 	"net/http"
-> 	"github.com/julienschmidt/httprouter"
-> 	ews "github.com/FossoresLP/go-easy-websocket"
-> )
-> 
-> func testWsHandler(data []byte) (resp []byte, err error) {
-> 	resp = []byte("yourData: ") + data
-> 	return
-> }
-> 
-> func main() {
-> 	router := httprouter.New()
-> 	ws := ews.NewHandler()
-> 	ws.Handle("test", testWsHandler)
-> 	router.GET("/ws", ws.UpgradeHandler)
-> }
-> ```
+To create a new websocket handler call [NewHandler()](https://godoc.org/github.com/FossoresLP/go-easy-websocket#NewHandler).
+
+Now you have to use [Handler.UpgradeHandler](https://godoc.org/github.com/FossoresLP/go-easy-websocket#Handler.#Handler.UpgradeHandler) to upgrade a normal HTTP request to websocket.
+
+```go
+handler := websocket.NewHandler()
+
+http.HandleFunc("/ws", handler.UpgradeHandler)
+
+log.Fatal(http.ListenAndServe(":8080", nil))
+```
+
+Client requests
+---------------
+
+You can handle client requests by registering [handle functions](https://godoc.org/github.com/FossoresLP/go-easy-websocket#HandleFunc) for specific command strings using [Handler.Handle](https://godoc.org/github.com/FossoresLP/go-easy-websocket#Handler.Handle)
+
+A handler for `open` can be registered and will be called every time a connection is opened. The message will be the clients session ID.
+
+```go
+handler.Handle("open", func(msg []byte, authToken string) ([]byte, error) {
+	// Parse message here
+	sessionid = uuid.Parse(msg)
+	// Validate auth token if necessary
+	return []byte("welcome: Hello " string(msg)), nil
+	// This will write "Hello xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" to the client using the command "welcome"
+})
+```
+
+Server push
+-----------
+
+The server can push commands and data to the clients using channels for which the clients have to register as listeners. The server may also push commands and data to specific clients whenever necessary using their session ID.
+
+```go
+handler.RegisterListenChannel("test")
+
+handler.WriteToChannel("test", []byte("thanks: Thank you for listening!"))
+
+handler.WriteToClient(sessionid, []byte("direct: This message is only sent to a single client"))
+```
