@@ -30,11 +30,11 @@ You can handle client requests by registering [handle functions](https://godoc.o
 A handler for `open` can be registered and will be called every time a connection is opened. The message will be the clients session ID.
 
 ```go
-handler.Handle("open", func(msg []byte, authToken string) ([]byte, error) {
+handler.Handle("open", func(msg []byte, authToken string) (*Message, error) {
 	// Parse message here
 	sessionid = uuid.Parse(msg)
 	// Validate auth token if necessary
-	return []byte("welcome: Hello " string(msg)), nil
+	return NewMessage("welcome", []byte("Hello " string(msg))), nil
 	// This will write "Hello xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" to the client using the command "welcome"
 })
 ```
@@ -47,7 +47,7 @@ The server can push commands and data to the clients using channels for which th
 ```go
 handler.RegisterListenChannel("test")
 
-handler.WriteToChannel("test", []byte("thanks: Thank you for listening!"))
+handler.WriteToChannel("test", NewMessage("thanks", []byte("Thank you for listening!")))
 
-handler.WriteToClient(sessionid, []byte("direct: This message is only sent to a single client"))
+handler.WriteToClient(sessionid, NewMessage("direct", []byte("This message is only sent to a single client")))
 ```

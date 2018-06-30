@@ -12,7 +12,7 @@ func (h *Handler) RegisterListenChannel(name string) error {
 		return errors.New("channel already exists")
 	}
 	h.channels[name] = &channel{
-		make(chan []byte, 8),
+		make(chan *Message, 8),
 		make([]uuid.UUID, 1),
 	}
 	go h.channelRoutine(name)
@@ -24,7 +24,7 @@ func (h *Handler) registerAsListener(id uuid.UUID, name string) error {
 		c.listeners = append(c.listeners, id)
 		return nil
 	}
-	return errors.New("websocket: channel does not exist")
+	return errors.New("channel does not exist")
 }
 
 func (h *Handler) unregisterAsListener(rmid uuid.UUID, name string) {
