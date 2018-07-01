@@ -8,7 +8,9 @@ import (
 	ws "github.com/gorilla/websocket"
 )
 
-var upgrader = ws.Upgrader{}
+var upgrader = ws.Upgrader{
+	Subprotocols: []string{"cmd.fossores.de"},
+}
 
 // UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
 func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,15 +32,12 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sessionid, err := uuid.New()
-	upgrader.Subprotocols = []string{"cmd.fossores.de"}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		w.WriteHeader(500)
-		fmt.Fprintln(w, "Websocket upgrade failed")
+		w.WriteHeader(426)
+		w.Header().Add("Upgrade", "WebSocket")
 		return
 	}
-	w.WriteHeader(426)
-	w.Header().Add("Upgrade", "WebSocket")
 	h.writeChannels[sessionid] = make(chan []byte, 8)
 	go h.handlerRoutine(conn, sessionid, cookie.Value)
 	go h.writerRoutine(conn, sessionid)
