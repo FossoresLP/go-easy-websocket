@@ -10,25 +10,22 @@ import (
 
 var upgrader = ws.Upgrader{}
 
-// ValidateFunction is a function that validates the auth token and returns an error if it is invalid
-var ValidateFunction func(string) error
-
 // UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
 func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("auth")
 	if err != nil {
 		w.WriteHeader(403)
-		fmt.Println("Authentication failed")
+		fmt.Fprintln(w, "Authentication failed")
 		return
 	}
 	if !cookie.HttpOnly || !cookie.Secure {
 		w.WriteHeader(403)
-		fmt.Println("Authentication failed")
+		fmt.Fprintln(w, "Authentication failed")
 		return
 	}
-	if ValidateFunction(cookie.Value) != nil {
+	if h.ValidateFunction(cookie.Value) != nil {
 		w.WriteHeader(403)
-		fmt.Println("Authentication failed")
+		fmt.Fprintln(w, "Authentication failed")
 		return
 	}
 
@@ -36,10 +33,12 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	upgrader.Subprotocols = []string{"cmd.fossores.de"}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		w.WriteHeader(426)
-		w.Header().Add("Upgrade", "WebSocket")
+		w.WriteHeader(500)
+		fmt.Fprintln(w, "Websocket upgrade failed")
 		return
 	}
+	w.WriteHeader(426)
+	w.Header().Add("Upgrade", "WebSocket")
 	h.writeChannels[sessionid] = make(chan []byte, 8)
 	go h.handlerRoutine(conn, sessionid, cookie.Value)
 	go h.writerRoutine(conn, sessionid)

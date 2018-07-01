@@ -22,17 +22,18 @@ type channel struct {
 
 // Handler for a single websocket endpoint
 type Handler struct {
-	handlers      map[string]HandleFunc
-	writeChannels map[uuid.UUID]chan []byte
-	channels      map[string]*channel
+	ValidateFunction func(string) error // ValidateFunction is a function that validates the auth token and returns an error if it is invalid
+	handlers         map[string]HandleFunc
+	writeChannels    map[uuid.UUID]chan []byte
+	channels         map[string]*channel
 }
 
 // NewHandler creates a new Handler
 func NewHandler() *Handler {
 	return &Handler{
-		make(map[string]HandleFunc),
-		make(map[uuid.UUID]chan []byte),
-		make(map[string]*channel),
+		handlers:      make(map[string]HandleFunc),
+		writeChannels: make(map[uuid.UUID]chan []byte),
+		channels:      make(map[string]*channel),
 	}
 }
 
