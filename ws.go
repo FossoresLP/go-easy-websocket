@@ -20,11 +20,6 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Authentication failed")
 		return
 	}
-	if !cookie.HttpOnly || !cookie.Secure {
-		w.WriteHeader(403)
-		fmt.Fprintln(w, "Authentication failed")
-		return
-	}
 	if h.ValidateFunction(cookie.Value) != nil {
 		w.WriteHeader(403)
 		fmt.Fprintln(w, "Authentication failed")
