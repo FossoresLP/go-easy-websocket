@@ -78,7 +78,7 @@ func (h *Handler) handlerRoutine(conn *ws.Conn, sessionid uuid.UUID, token strin
 
 // Handle registers a handle function for a command
 func (h *Handler) Handle(cmd string, action HandleFunc) error {
-	if len(cmd) < 255 {
+	if len(cmd) > 255 {
 		return errors.New("command may not be longer than 255 characters")
 	}
 	if strings.ContainsRune(cmd, ':') {
@@ -97,7 +97,7 @@ func (h *Handler) Handle(cmd string, action HandleFunc) error {
 // Parse a recived message and return string and data
 func parseMsgByte(msg []byte) (cmd string, data []byte, err error) {
 	var i uint8
-	for ; i <= 255; i++ {
+	for ; i <= uint8(len(msg)-1) && i <= 255; i++ {
 		if msg[i] == ':' && msg[i+1] == ' ' {
 			cmd = string(msg[0:i])
 			data = msg[i+2:]
