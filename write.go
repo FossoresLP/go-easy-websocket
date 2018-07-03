@@ -7,6 +7,10 @@ import (
 	ws "github.com/gorilla/websocket"
 )
 
+// writerRoutine is the goroutine spawned to send all messages that are queued for a specific client.
+// It will check if a channel exists for the messages to send and then indefinitely loop over the incoming messages on that channel and send those to the client.
+// The loop will exit when a write fails. This should only ever happen if the client disconnected.
+// This goroutine will close the connection to the client upon exiting.
 func (h *Handler) writerRoutine(conn *ws.Conn, userid uuid.UUID) {
 	defer conn.Close()
 	if channel, ok := h.writeChannels[userid]; ok {
@@ -19,6 +23,9 @@ func (h *Handler) writerRoutine(conn *ws.Conn, userid uuid.UUID) {
 	}
 }
 
+// channelRoutine is the goroutine spawned to handle all messages that are queued for a specific channel.
+// It will check if the channel exists and then indefinitely loop over the incoming messages trying to send them to all registered listeners.
+// If writing to a listener fails which will only ever happen when that listener is no longer connected, the session id removed as a listener.
 func (h *Handler) channelRoutine(channel string) {
 	if c, ok := h.channels[channel]; ok {
 		for {
@@ -33,8 +40,16 @@ func (h *Handler) channelRoutine(channel string) {
 	}
 }
 
-// WriteToChannel allows to write to all clients listening to a specific channel
+// WriteToChannel sends a message to all clients listening to a specific channel.
+// It takes the channel name and a pointer to a message as arguments.
+// It will fail if the command is nil or longer than 255 characters or if the channel does not exist.
 func (h *Handler) WriteToChannel(channel string, msg *Message) error {
+	if msg.command == nil {
+		return errors.New("command may not be empty")
+	}
+	if len(msg.command) > 255 {
+		return errors.New("command may not be longer than 255 characters")
+	}
 	if c, ok := h.channels[channel]; ok {
 		c.send <- msg
 		return nil
@@ -42,7 +57,9 @@ func (h *Handler) WriteToChannel(channel string, msg *Message) error {
 	return errors.New("channel does not exist")
 }
 
-// WriteToClient allows to write to a single specific client
+// WriteToClient sends a message to a specific client.
+// It takes the users session id as a UUID and a pointer to a message as arguments.
+// It will fail if the command is nil or longer than 255 characters or if the session does not exist.
 func (h *Handler) WriteToClient(user uuid.UUID, msg *Message) error {
 	if msg.command == nil {
 		return errors.New("command may not be empty")
@@ -53,6 +70,9 @@ func (h *Handler) WriteToClient(user uuid.UUID, msg *Message) error {
 	return h.writeToClient(user, msg.command, msg.content)
 }
 
+// writeToClient is the underlying function that is used send messages the individual clients.
+//It takes the userid, command and message.
+// These are then combined into the correct message format and passed to the send channel.
 func (h *Handler) writeToClient(user uuid.UUID, cmd, data []byte) error {
 	if c, ok := h.writeChannels[user]; ok {
 		prep := append(cmd, ':', ' ')
