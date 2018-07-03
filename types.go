@@ -10,17 +10,27 @@ import (
 // websocket command
 var cmdWebSocket = []byte("websocket")
 
-// HandleFunc is a type used to store handle functions for ws commands
-// Handle functions take the message as a byte slice and the auth token as a string and may return a response as a byte slice as well as an error
+// HandleFunc is a type used to store handle functions for ws commands.
+// Handle functions take the message as a byte slice and the auth token as a string and may return a message that will be submitted to the client as a response as well as an error.
 type HandleFunc func([]byte, string) (*Message, error)
 
-// channel channel and listening clients
+// channel stores a channel used to buffer the messsages as well as a slice containing the session ids of all listeners.
 type channel struct {
 	send      chan *Message
 	listeners []uuid.UUID
 }
 
-// Handler for a single websocket endpoint
+/*Handler is the base type of a websocket endpoint.
+
+It stores all relevant connections and is used to manage handlers and channels.
+
+The only public field is ValidateFunction which stores a function that is used to validate the users auth token.
+
+Disabling authentication is currently not supported but you can simply supply a validation function that returns nil in all cases.
+ func(_ string) error {
+ 	return nil
+ }
+Please make sure to set the auth cookie anyway as it is required for the connection to be accepted.*/
 type Handler struct {
 	ValidateFunction func(string) error // ValidateFunction is a function that validates the auth token and returns an error if it is invalid
 	handlers         map[string]HandleFunc
@@ -28,7 +38,7 @@ type Handler struct {
 	channels         map[string]*channel
 }
 
-// NewHandler creates a new Handler
+// NewHandler creates a new Handler and returns a pointer to it.
 func NewHandler() *Handler {
 	return &Handler{
 		handlers:      make(map[string]HandleFunc),
@@ -37,13 +47,25 @@ func NewHandler() *Handler {
 	}
 }
 
-// Message is a type that contains a websocket message
+// Message is the type used to prepare websocket messages for sending.
+// It is not meant to be initialized itself but should be created using
+//	NewMessage(command string, data []byte)
+// For that exact reason the fields are not exported.
 type Message struct {
 	command []byte
 	content []byte
 }
 
-// NewMessage creates a new message from a command string and the content as a byte slice
+/*NewMessage creates a new message from a command string and content submitted as a byte slice.
+In case no content should be sent, please use nil instead of an empty slice.
+
+There are some rules enforced by NewMessage():
+
+- Commands may not be empty or longer than 255 characters
+
+- Commands may not contain a colon
+
+- Commands may not be "websocket" as this command is reserved*/
 func NewMessage(cmd string, data []byte) (*Message, error) {
 	if len(cmd) > 255 {
 		return &Message{}, errors.New("command may not be longer than 255 characters")

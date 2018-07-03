@@ -58,7 +58,7 @@ func (h *Handler) WriteToChannel(channel string, msg *Message) error {
 }
 
 // WriteToClient sends a message to a specific client.
-// It takes the users session id as a UUID and a pointer to a message as arguments.
+// It takes the users session id as an UUID and a pointer to a message as arguments.
 // It will fail if the command is nil or longer than 255 characters or if the session does not exist.
 func (h *Handler) WriteToClient(user uuid.UUID, msg *Message) error {
 	if msg.command == nil {
