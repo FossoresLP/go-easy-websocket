@@ -1,7 +1,10 @@
 GoEasyWebsocket
 ===============
 
-[![CircleCI branch](https://img.shields.io/circleci/project/github/FossoresLP/go-easy-websocket/master.svg?style=flat-square)](https://circleci.com/gh/FossoresLP/go-easy-websocket)
+[![CircleCI](https://img.shields.io/circleci/project/github/FossoresLP/go-easy-websocket/master.svg?style=flat-square)](https://circleci.com/gh/FossoresLP/go-easy-websocket)
+
+[![Coveralls](https://img.shields.io/coveralls/github/FossoresLP/go-easy-websocket/master.svg?style=flat-square)](https://coveralls.io/github/FossoresLP/go-easy-websocket)
+
 [![Licensed under: Boost Software License](https://img.shields.io/badge/style-BSL--1.0-red.svg?longCache=true&style=flat-square&label=License)](https://github.com/FossoresLP/go-easy-websocket/blob/master/LICENSE.md)
 [![GoDoc](https://img.shields.io/badge/style-reference-blue.svg?longCache=true&style=flat-square&label=GoDoc)](https://godoc.org/github.com/FossoresLP/go-easy-websocket)
 
