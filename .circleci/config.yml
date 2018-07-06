@@ -14,11 +14,8 @@ jobs:
           name: Run unit tests
           command: go test -v 2>&1 | go-junit-report > test-results/report.xml
       - run:
-          name: Generate cover profile
-          command: go test -v -covermode=count -coverprofile=test-results/coverage.out
-      - run:
-          name: Submit cover profile
-          command: goveralls -coverprofile=test-results/coverage.out -service=circle-ci -repotoken $COVERALLS_TOKEN
+          name: Coverage profile
+          command: goveralls -show -service=circle-ci -repotoken $COVERALLS_TOKEN
       - run:
           name: go vet
           command: go vet
