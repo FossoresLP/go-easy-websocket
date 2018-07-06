@@ -31,11 +31,11 @@ You can handle client requests by registering [handle functions](https://godoc.o
 A handler for `open` can be registered and will be called every time a connection is opened. The message will be the clients session ID.
 
 ```go
-handler.Handle("open", func(msg []byte, authToken string) (*Message, error) {
+handler.Handle("open", func(msg []byte, authToken string) *Message {
 	// Parse message here
 	sessionid = uuid.Parse(msg)
 	// Validate auth token if necessary
-	return NewMessage("welcome", []byte("Hello " string(msg))), nil
+	return NewMessage("welcome", []byte("Hello " string(msg)))
 	// This will write "Hello xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" to the client using the command "welcome"
 })
 ```
