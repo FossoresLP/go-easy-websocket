@@ -3,7 +3,7 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.10
-    working_directory: /go/src/github.com/fossoreslp/go-easy-websocket
+    working_directory: /go/src/github.com/FossoresLP/go-easy-websocket
     steps:
       - checkout
       - run: go get
