@@ -59,6 +59,6 @@ func (h *Handler) unregisterAsListener(rmid uuid.UUID, name string) error {
 
 func (h *Handler) unregisterListener(rmid uuid.UUID) {
 	for name := range h.channels {
-		h.unregisterAsListener(rmid, name)
+		h.unregisterAsListener(rmid, name) // nolint: errcheck
 	}
 }

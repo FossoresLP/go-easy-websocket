@@ -28,16 +28,20 @@ func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("auth")
 	if err != nil {
 		w.WriteHeader(403)
-		fmt.Fprintln(w, "Authentication failed")
+		fmt.Fprintln(w, "Authentication failed") // nolint: errcheck
 		return
 	}
 	if h.ValidateFunction(cookie.Value) != nil {
 		w.WriteHeader(403)
-		fmt.Fprintln(w, "Authentication failed")
+		fmt.Fprintln(w, "Authentication failed") // nolint: errcheck
 		return
 	}
 
 	sessionid, err := uuid.New()
+	if err != nil {
+		w.WriteHeader(500)
+		fmt.Fprintln(w, "Server failed to initialize session") // nolint: errcheck
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		w.WriteHeader(426)

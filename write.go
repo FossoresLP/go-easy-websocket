@@ -12,7 +12,7 @@ import (
 // The loop will exit when a write fails. This should only ever happen if the client disconnected.
 // This goroutine will close the connection to the client upon exiting.
 func (h *Handler) writerRoutine(conn *ws.Conn, userid uuid.UUID) {
-	defer conn.Close()
+	defer conn.Close() // nolint: errcheck
 	if channel, ok := h.writeChannels[userid]; ok {
 		for {
 			err := conn.WriteMessage(ws.TextMessage, <-channel)
@@ -33,7 +33,7 @@ func (h *Handler) channelRoutine(channel string) {
 			for _, listener := range c.listeners {
 				err := h.writeToClient(listener, msg.command, msg.content)
 				if err != nil {
-					h.unregisterAsListener(listener, channel)
+					h.unregisterAsListener(listener, channel) // nolint: errcheck
 				}
 			}
 		}

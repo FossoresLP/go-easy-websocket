@@ -12,7 +12,7 @@ var cmdWebSocket = []byte("websocket")
 
 // HandleFunc is a type used to store handle functions for ws commands.
 // Handle functions take the message as a byte slice and the auth token as a string and may return a message that will be submitted to the client as a response as well as an error.
-type HandleFunc func([]byte, string) (*Message, error)
+type HandleFunc func([]byte, string) *Message
 
 // channel stores a channel used to buffer the messsages as well as a slice containing the session ids of all listeners.
 type channel struct {
