@@ -1,8 +1,8 @@
 package websocket
 
 import (
+	"bytes"
 	"errors"
-	"reflect"
 	"strings"
 
 	"github.com/fossoreslp/go-uuid-v4"
@@ -27,7 +27,7 @@ func (h *Handler) handlerRoutine(conn *ws.Conn, sessionid uuid.UUID, token strin
 			break
 		}
 		msg := parseMessage(rawMsg)
-		if reflect.DeepEqual(msg.command, []byte("listen")) {
+		if bytes.Equal(msg.command, []byte("listen")) {
 			if h.registerAsListener(sessionid, string(msg.content)) != nil {
 				if h.writeToClient(sessionid, cmdWebSocket, []byte(err.Error())) != nil {
 					break
@@ -68,15 +68,17 @@ func (h *Handler) Handle(cmd string, action HandleFunc) error {
 
 // parseMessage returns a Message pointer
 func parseMessage(msg []byte) *Message {
-	var i uint8
 	out := &Message{nil, nil}
-	for ; i <= uint8(len(msg)-1) && i <= 255; i++ {
-		if msg[i] == ':' && msg[i+1] == ' ' && len(msg[0:i]) > 0 {
-			out.command = msg[0:i]
-			if int(i+2) < len(msg) {
-				out.content = msg[i+2:]
-			}
-			break
+	var i int
+	if len(msg) < 256 {
+		i = bytes.Index(msg, []byte(": "))
+	} else {
+		i = bytes.Index(msg[:256], []byte(": "))
+	}
+	if i >= 1 {
+		out.command = msg[:i]
+		if i+2 < len(msg) {
+			out.content = msg[i+2:]
 		}
 	}
 	return out
