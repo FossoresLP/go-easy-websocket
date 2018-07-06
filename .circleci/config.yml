@@ -15,7 +15,7 @@ jobs:
           command: go test -v 2>&1 | go-junit-report > test-results/report.xml
       - run:
           name: Coverage profile
-          command: goveralls -show -service=circle-ci -repotoken $COVERALLS_TOKEN
+          command: goveralls -show -service=circle-ci
       - run:
           name: go vet
           command: go vet
