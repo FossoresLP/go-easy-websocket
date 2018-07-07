@@ -11,7 +11,7 @@ import (
 var cmdWebSocket = []byte("websocket")
 
 // HandleFunc is a type used to store handle functions for ws commands.
-// Handle functions take the message as a byte slice and the auth token as a string and may return a message that will be submitted to the client as a response as well as an error.
+// Handle functions take the message as a byte slice and the auth token as a string and may return a message that will be submitted to the client or nil if no response is necessary.
 type HandleFunc func([]byte, string) *Message
 
 // channel stores a channel used to buffer the messsages as well as a slice containing the session ids of all listeners.
@@ -22,7 +22,7 @@ type channel struct {
 
 /*Handler is the base type of a websocket endpoint.
 
-It stores all relevant connections and is used to manage handlers and channels.
+It stores all relevant connections and is used to manage command handlers and channels.
 
 The only public field is ValidateFunction which stores a function that is used to validate the users auth token.
 
@@ -47,10 +47,11 @@ func NewHandler() *Handler {
 	}
 }
 
-// Message is the type used to prepare websocket messages for sending.
-// It is not meant to be initialized itself but should be created using
+// Message is the type used to handle websocket messages.
+// It is meant to be initialized using
 //	NewMessage(command string, data []byte)
-// For that exact reason the fields are not exported.
+// to ensure only valid messages are created in the first place.
+// For that reason the fields are not exported.
 type Message struct {
 	command []byte
 	content []byte

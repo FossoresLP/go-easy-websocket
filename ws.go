@@ -23,7 +23,7 @@ var upgrader = ws.Upgrader{
 	Subprotocols: []string{"cmd.fossores.de"},
 }
 
-// UpgradeHandler upgrades http requests to ws and starts a goroutine for handling ws messages
+// UpgradeHandler upgrades http requests to websocket and starts the necessary goroutines for handling receiving and sending messages
 func (h *Handler) UpgradeHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("auth")
 	if err != nil {
