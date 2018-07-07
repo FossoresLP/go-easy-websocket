@@ -28,14 +28,14 @@ func (h *Handler) handlerRoutine(conn *ws.Conn, sessionid uuid.UUID, token strin
 		}
 		msg := parseMessage(rawMsg)
 		if bytes.Equal(msg.command, []byte("listen")) {
-			if h.registerAsListener(sessionid, string(msg.content)) != nil {
+			if err := h.registerAsListener(sessionid, string(msg.content)); err != nil {
 				if h.writeToClient(sessionid, cmdWebSocket, []byte(err.Error())) != nil {
 					break
 				}
 			}
 		} else if fnc, ok := h.handlers[string(msg.command)]; ok {
 			msg = fnc(msg.content, token)
-			if msg.command != nil && msg.content != nil {
+			if msg != nil && msg.command != nil && msg.content != nil {
 				if h.writeToClient(sessionid, msg.command, msg.content) != nil {
 					break
 				}
