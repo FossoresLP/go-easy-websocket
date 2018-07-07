@@ -9,17 +9,23 @@ jobs:
           path: /go/src/github.com/fossoreslp/go-easy-websocket/
       - run: go get -u github.com/jstemmer/go-junit-report
       - run: go get -u github.com/mattn/goveralls
-      - run: cd src/github.com/fossoreslp/go-easy-websocket
-      - run: go get
-      - run: mkdir test-results
+      - run: 
+          command: go get
+          working_directory: /go/src/github.com/fossoreslp/go-easy-websocket
+      - run: 
+          command: mkdir test-results
+          working_directory: /go/src/github.com/fossoreslp/go-easy-websocket
       - run:
           name: Run unit tests
           command: go test -v 2>&1 | go-junit-report > test-results/report.xml
+          working_directory: /go/src/github.com/fossoreslp/go-easy-websocket
       - run:
           name: Coverage profile
           command: goveralls -show -service=circle-ci
+          working_directory: /go/src/github.com/fossoreslp/go-easy-websocket
       - run:
           name: go vet
           command: go vet
+          working_directory: /go/src/github.com/fossoreslp/go-easy-websocket
       - store_test_results:
-          path: test-results
+          path: /go/src/github.com/fossoreslp/go-easy-websocket/test-results
