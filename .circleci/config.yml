@@ -4,6 +4,9 @@ jobs:
     docker:
       - image: circleci/golang:1.10
     working_directory: /go/src/github.com/FossoresLP/go-easy-websocket
+    environment:
+      - GOROOT: /go/
+      - GOPATH: /go/
     steps:
       - checkout
       - run: go get
