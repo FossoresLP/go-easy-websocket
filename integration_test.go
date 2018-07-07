@@ -55,7 +55,7 @@ func initClient() (*wsc.Conn, error) {
 }
 
 func Test_Websocket(t *testing.T) {
-	go serverRoutine(t)
+	go serverRoutine(t) // nolint: errcheck
 
 	client, err := initClient()
 	if err != nil {
