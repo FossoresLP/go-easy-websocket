@@ -5,8 +5,8 @@ jobs:
       - image: circleci/golang:1.10
     working_directory: /go/
     steps:
-      - checkout
-        path: /go/src/github.com/fossoreslp/go-easy-websocket/
+      - checkout:
+          path: /go/src/github.com/fossoreslp/go-easy-websocket/
       - run: go get
       - run: go get -u github.com/jstemmer/go-junit-report
       - run: go get -u github.com/mattn/goveralls
