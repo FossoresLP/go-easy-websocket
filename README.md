@@ -45,10 +45,23 @@ handler.Handle("open", func(msg []byte, authToken string) *Message {
 Server push
 -----------
 
-The server can push commands and data to the clients using channels for which the clients have to register as listeners. The server may also push commands and data to specific clients whenever necessary using their session ID.
+The server can push commands and data to the clients using channels for which the clients have to register as listeners.
+
+Channels can have validation functions attached on setup to restrict which clients will be allowed to register as listeners.
+These validation functions will be called whenever a client tries to register as a listener with the auth token that client submitted when connecting.
+A return value of `nil` will be considered a successful validation while any error will be considered a validation failure and therefore prevent the client from registering as a listener. The errors will not be relayed to the client to improve security. Instead a generic error message will be sent.
+
+The server may also push commands and data to specific clients whenever necessary using their session ID.
 
 ```go
-handler.RegisterListenChannel("test")
+handler.RegisterListenChannel("test", nil) // Anyone can register as a listener
+
+handler.RegisterListenChannel("restricted", func(t string) error {
+	if t != "valid" {
+		return errors.New("Invalid token")
+	}
+	return nil
+})
 
 handler.WriteToChannel("test", NewMessage("thanks", []byte("Thank you for listening!")))
 

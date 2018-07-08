@@ -6,7 +6,10 @@ import (
 	"github.com/fossoreslp/go-uuid-v4"
 )
 
-// RegisterListenChannel registers a channel for writing to clients listening on it
+// RegisterListenChannel registers a channel for writing to clients listening on it.
+// It takes the channel name as a string and a validation function taking a string and returning an error as arguments.
+// You may use nil instead of a validation function in case no validation is required.
+// When using a validation function, a return value of nil is considered as validation successful while an error means validation failed.
 func (h *Handler) RegisterListenChannel(name string, validationFunc func(string) error) error {
 	if _, ok := h.channels[name]; ok {
 		return errors.New("channel already exists")
