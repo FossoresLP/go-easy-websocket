@@ -78,7 +78,7 @@ func TestHandler_channelRoutine(t *testing.T) {
 		t.Fatalf("Failed to generate random ID for testing: %s", err.Error())
 	}
 	h.writeChannels[sessionID] = make(chan []byte, 8)
-	h.channels["test"] = &channel{make(chan *Message, 2), []uuid.UUID{sessionID, randomID}}
+	h.channels["test"] = &channel{make(chan *Message, 2), []uuid.UUID{sessionID, randomID}, nil}
 	go h.channelRoutine("test")
 	h.channels["test"].send <- &Message{[]byte("cmd"), []byte("content")}
 	msg := <-h.writeChannels[sessionID]
@@ -89,7 +89,7 @@ func TestHandler_channelRoutine(t *testing.T) {
 
 func TestHandler_WriteToChannel(t *testing.T) {
 	h := NewHandler()
-	h.channels["test"] = &channel{make(chan *Message, 8), []uuid.UUID{}}
+	h.channels["test"] = &channel{make(chan *Message, 8), []uuid.UUID{}, nil}
 	type args struct {
 		channel string
 		msg     *Message

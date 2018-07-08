@@ -14,10 +14,11 @@ var cmdWebSocket = []byte("websocket")
 // Handle functions take the message as a byte slice and the auth token as a string and may return a message that will be submitted to the client or nil if no response is necessary.
 type HandleFunc func([]byte, string) *Message
 
-// channel stores a channel used to buffer the messsages as well as a slice containing the session ids of all listeners.
+// channel stores a channel used to buffer the messsages as well as a slice containing the session ids of all listeners. It also may contain a validation function in case not everyone should be able to listen on the channel.
 type channel struct {
-	send      chan *Message
-	listeners []uuid.UUID
+	send           chan *Message
+	listeners      []uuid.UUID
+	validationFunc func(string) error
 }
 
 /*Handler is the base type of a websocket endpoint.
