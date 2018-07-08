@@ -31,7 +31,13 @@ func serverRoutine(t *testing.T) {
 		msg, _ := ws.NewMessage("response", []byte("sent"))
 		return msg
 	})
-	h.RegisterListenChannel("test")
+	h.RegisterListenChannel("test", nil)
+	h.RegisterListenChannel("validate", func(t string) error {
+		if t != "channel_valid" {
+			return errors.New("Not permitted")
+		}
+		return nil
+	})
 	http.HandleFunc("/", h.UpgradeHandler)
 	err := http.ListenAndServe("localhost:8080", nil)
 	if err != nil {
@@ -108,6 +114,17 @@ func Test_Websocket(t *testing.T) {
 	t.Log(msg)
 	// Register for invalid channel
 	err = client.WriteMessage(wsc.TextMessage, []byte("listen: invalid"))
+	if err != nil {
+		t.Errorf("Failed to send message: %s", err.Error())
+	}
+	// Receive response
+	_, msg, err = client.ReadMessage()
+	if err != nil {
+		t.Errorf("Failed to receive message: %s", err.Error())
+	}
+	t.Log(msg)
+	// Register for channel without authentication
+	err = client.WriteMessage(wsc.TextMessage, []byte("listen: validate"))
 	if err != nil {
 		t.Errorf("Failed to send message: %s", err.Error())
 	}

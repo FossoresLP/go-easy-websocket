@@ -9,7 +9,8 @@ import (
 func TestHandler_RegisterListenChannel(t *testing.T) {
 	handler := NewHandler()
 	type args struct {
-		name string
+		name         string
+		validateFunc func(string) error
 	}
 	tests := []struct {
 		name    string
@@ -17,12 +18,12 @@ func TestHandler_RegisterListenChannel(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"Normal", handler, args{"test"}, false},
-		{"AlreadyExists", handler, args{"test"}, true},
+		{"Normal", handler, args{"test", nil}, false},
+		{"AlreadyExists", handler, args{"test", nil}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.h.RegisterListenChannel(tt.args.name); (err != nil) != tt.wantErr {
+			if err := tt.h.RegisterListenChannel(tt.args.name, tt.args.validateFunc); (err != nil) != tt.wantErr {
 				t.Errorf("Handler.RegisterListenChannel() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -32,7 +33,7 @@ func TestHandler_RegisterListenChannel(t *testing.T) {
 func TestHandler_registerAsListener(t *testing.T) {
 	handler := NewHandler()
 	id := uuid.UUID{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
-	if err := handler.RegisterListenChannel("test"); err != nil {
+	if err := handler.RegisterListenChannel("test", nil); err != nil {
 		t.Fatalf("Could not register listen channel: %s", err.Error())
 	}
 	type args struct {
@@ -67,7 +68,7 @@ func TestHandler_unregisterAsListener(t *testing.T) {
 	handler := NewHandler()
 	id := uuid.UUID{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
 	altID := uuid.UUID{0xF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
-	if err := handler.RegisterListenChannel("test"); err != nil {
+	if err := handler.RegisterListenChannel("test", nil); err != nil {
 		t.Fatalf("Could not register listen channel: %s", err.Error())
 	}
 	// Add ID as only ID in list
@@ -119,18 +120,18 @@ func TestHandler_unregisterAsListener(t *testing.T) {
 func TestHandler_unregisterListener(t *testing.T) {
 	handler := NewHandler()
 	id := uuid.UUID{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
-	if err := handler.RegisterListenChannel("test1"); err != nil {
+	if err := handler.RegisterListenChannel("test1", nil); err != nil {
 		t.Fatalf("Could not register listen channel: %s", err.Error())
 	}
 	handler.channels["test1"].listeners = append(handler.channels["test1"].listeners, id)
-	if err := handler.RegisterListenChannel("test2"); err != nil {
+	if err := handler.RegisterListenChannel("test2", nil); err != nil {
 		t.Fatalf("Could not register listen channel: %s", err.Error())
 	}
-	if err := handler.RegisterListenChannel("test3"); err != nil {
+	if err := handler.RegisterListenChannel("test3", nil); err != nil {
 		t.Fatalf("Could not register listen channel: %s", err.Error())
 	}
 	handler.channels["test3"].listeners = append(handler.channels["test3"].listeners, id)
-	if err := handler.RegisterListenChannel("test4"); err != nil {
+	if err := handler.RegisterListenChannel("test4", nil); err != nil {
 		t.Fatalf("Could not register listen channel: %s", err.Error())
 	}
 	handler.unregisterListener(id)
